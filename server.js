@@ -94,6 +94,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static frontend assets
 app.use(express.static(__dirname));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Route for Admin CRM Dashboard
 app.get('/admin', (req, res) => {
@@ -364,12 +367,15 @@ app.get('/api/export/csv', (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log('====================================================');
-  console.log(` AM GLOBAL GROUPS — Enterprise Server Active`);
-  console.log(` Registered Udyam: UDYAM-TN-18-0102459 (MSME Govt of India)`);
-  console.log(` Portal URL:    http://localhost:${PORT}`);
-  console.log(` CRM Admin URL: http://localhost:${PORT}/admin`);
-  console.log(` API Endpoint:  http://localhost:${PORT}/api/inquiries`);
-  console.log('====================================================');
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('====================================================');
+    console.log(` AM GLOBAL GROUPS — Enterprise Server Active`);
+    console.log(` Portal URL:    http://localhost:${PORT}`);
+    console.log(` CRM Admin URL: http://localhost:${PORT}/admin`);
+    console.log(` API Endpoint:  http://localhost:${PORT}/api/inquiries`);
+    console.log('====================================================');
+  });
+}
+
+module.exports = app;
