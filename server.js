@@ -1,91 +1,69 @@
 /**
  * AM GLOBAL GROUPS — Official Corporate Backend & CRM API Server
  * Registered under Ministry of MSME, Govt of India (UDYAM-TN-18-0102459)
+ *
+ * Storage: In-memory database (works on both localhost and Vercel).
+ * Vercel serverless functions run on a read-only filesystem, so file-based
+ * storage is not supported. In-memory storage is used instead and is
+ * pre-seeded with sample CRM data on every cold start.
  */
 
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Data Storage Paths
-const DATA_DIR = path.join(__dirname, 'data');
-const DB_FILE = path.join(DATA_DIR, 'inquiries.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-// Database Helper Functions
-const readDB = () => {
-  try {
-    if (!fs.existsSync(DB_FILE)) {
-      // Initialize with sample inquiries for immediate CRM demonstration
-      const initialData = [
-        {
-          id: 'INQ-2026-001',
-          name: 'K. Ramanathan',
-          phone: '+91 98421 54321',
-          email: 'ramanathan@enterprises.com',
-          division: 'AM Infotech',
-          message: 'Interested in building an enterprise web portal with custom cloud hosting and responsive UI/UX architecture.',
-          source: 'Contact Form',
-          quoteDetails: 'Professional Web App & Cloud Setup (₹25,000 – ₹45,000)',
-          status: 'Contacted',
-          createdAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
-          updatedAt: new Date(Date.now() - 3600000 * 12).toISOString()
-        },
-        {
-          id: 'INQ-2026-002',
-          name: 'S. Murugan & Family',
-          phone: '+91 94432 10987',
-          email: 'murugan.events@gmail.com',
-          division: 'A² Royal Events',
-          message: 'Planning grand royal wedding reception. Need complete palace stage architecture, luxury BMW/Audi motorcade, and banquet feast.',
-          source: 'Quote Estimator',
-          quoteDetails: 'Grand Royal Wedding & Motorcade (₹1,50,000 – ₹3,50,000)',
-          status: 'In Progress',
-          createdAt: new Date(Date.now() - 3600000 * 14).toISOString(),
-          updatedAt: new Date(Date.now() - 3600000 * 4).toISOString()
-        },
-        {
-          id: 'INQ-2026-003',
-          name: 'Anand Prabhu',
-          phone: '+91 88703 11223',
-          email: 'anand.catering@yahoo.co.in',
-          division: 'SB Food Production',
-          message: 'Looking for bulk monthly supply of authentic stone-ground sambar powder and turmeric for 5 catering kitchens.',
-          source: 'Modal Quick Form',
-          quoteDetails: 'Commercial Bulk Supply for Banquets (₹15,000 – ₹35,000)',
-          status: 'Pending',
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-          updatedAt: new Date(Date.now() - 3600000 * 2).toISOString()
-        }
-      ];
-      fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
-      return initialData;
-    }
-    const content = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(content || '[]');
-  } catch (err) {
-    console.error('Error reading database:', err);
-    return [];
+// ============================================================
+// IN-MEMORY DATABASE (Vercel-compatible)
+// Pre-seeded with sample CRM data so the dashboard is never empty.
+// ============================================================
+let inMemoryDB = [
+  {
+    id: 'INQ-2026-001',
+    name: 'K. Ramanathan',
+    phone: '+91 98421 54321',
+    email: 'ramanathan@enterprises.com',
+    division: 'AM Infotech',
+    message: 'Interested in building an enterprise web portal with custom cloud hosting and responsive UI/UX architecture.',
+    source: 'Contact Form',
+    quoteDetails: 'Professional Web App & Cloud Setup (₹25,000 – ₹45,000)',
+    status: 'Contacted',
+    createdAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 12).toISOString()
+  },
+  {
+    id: 'INQ-2026-002',
+    name: 'S. Murugan & Family',
+    phone: '+91 94432 10987',
+    email: 'murugan.events@gmail.com',
+    division: 'A² Royal Events',
+    message: 'Planning grand royal wedding reception. Need complete palace stage architecture, luxury BMW/Audi motorcade, and banquet feast.',
+    source: 'Quote Estimator',
+    quoteDetails: 'Grand Royal Wedding & Motorcade (₹1,50,000 – ₹3,50,000)',
+    status: 'In Progress',
+    createdAt: new Date(Date.now() - 3600000 * 14).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 4).toISOString()
+  },
+  {
+    id: 'INQ-2026-003',
+    name: 'Anand Prabhu',
+    phone: '+91 88703 11223',
+    email: 'anand.catering@yahoo.co.in',
+    division: 'SB Food Production',
+    message: 'Looking for bulk monthly supply of authentic stone-ground sambar powder and turmeric for 5 catering kitchens.',
+    source: 'Modal Quick Form',
+    quoteDetails: 'Commercial Bulk Supply for Banquets (₹15,000 – ₹35,000)',
+    status: 'Pending',
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString()
   }
-};
+];
 
-const writeDB = (data) => {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (err) {
-    console.error('Error writing database:', err);
-    return false;
-  }
-};
+// Simple in-memory read/write helpers
+const readDB = () => inMemoryDB;
+const writeDB = (data) => { inMemoryDB = data; return true; };
 
 // Middleware
 app.use(cors());
