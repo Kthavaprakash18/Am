@@ -94,16 +94,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static frontend assets
 app.use(express.static(process.cwd()));
+
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'admin.html'));
+  res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
-// Route for Admin CRM Dashboard
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+  res.sendFile(path.join(process.cwd(), 'admin.html'));
 });
 
 // ==========================================
