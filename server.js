@@ -93,9 +93,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static frontend assets
-app.use(express.static(__dirname));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+app.use(express.static(process.cwd()));
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'admin.html'));
 });
 
 // Route for Admin CRM Dashboard
